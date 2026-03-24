@@ -381,3 +381,60 @@ a {
 .login-header p {
     color: var(--text-muted);
 }
+
+.card-footer {
+    padding: 1rem 1.5rem;
+    background-color: #F9FAFB;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Pagination */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.pagination {
+    display: flex;
+    list-style: none;
+    gap: 0.35rem;
+    padding: 0;
+    margin: 0;
+}
+.pagination-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-main);
+    background-color: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+.pagination-link:hover {
+    background-color: #F5F3FF;
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-1px);
+}
+.pagination-link.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white !important;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+}
+.pagination-link.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    background-color: transparent;
+    color: var(--text-muted);
+}

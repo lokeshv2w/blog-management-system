@@ -32,6 +32,11 @@ foreach ($files as $file) {
 }
 // Sort by newest first
 usort($mediaList, function($a, $b) { return $b['time'] - $a['time']; });
+
+// Paginate the array
+$total_media = count($mediaList);
+$pagination = get_pagination_data($total_media, 12); // Show 12 items (3x4 grid)
+$mediaList = array_slice($mediaList, $pagination['offset'], $pagination['limit']);
 ?>
 
 <style>
@@ -164,6 +169,10 @@ usort($mediaList, function($a, $b) { return $b['time'] - $a['time']; });
         </div>
     </div>
     <?php endforeach; ?>
+</div>
+
+<div class="pagination-container">
+    <?php echo render_pagination($pagination['current_page'], $pagination['total_pages'], 'media.php'); ?>
 </div>
 
 <script>

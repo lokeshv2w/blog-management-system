@@ -22,16 +22,32 @@ if ($category_slug) {
     }
 }
 
-// Fetch published posts
+// Fetch total count for pagination
+$count_sql = "SELECT COUNT(*) FROM posts p $where_clause";
+$stmt = $pdo->prepare($count_sql);
+$stmt->execute($params);
+$total_posts = $stmt->fetchColumn();
+
+$pagination = get_pagination_data($total_posts, 9); // Show 9 posts per page (3x3 grid)
+
+// Fetch published posts with limit and offset
 $sql = "SELECT p.id, p.title, p.slug, p.content, p.image, p.created_at, c.name as category, c.slug as cat_slug, u.username as author 
         FROM posts p 
         LEFT JOIN categories c ON p.category_id = c.id 
         LEFT JOIN users u ON p.user_id = u.id 
         $where_clause 
-        ORDER BY p.created_at DESC";
+        ORDER BY p.created_at DESC 
+        LIMIT :limit OFFSET :offset";
 
 $stmt = $pdo->prepare($sql);
-$stmt->execute($params);
+// Re-bind params if any (from categories)
+foreach ($params as $key => $val) {
+    $stmt->bindValue($key + 1, $val);
+}
+// Bind pagination params
+$stmt->bindValue(':limit', (int)$pagination['limit'], PDO::PARAM_INT);
+$stmt->bindValue(':offset', (int)$pagination['offset'], PDO::PARAM_INT);
+$stmt->execute();
 $posts = $stmt->fetchAll();
 ?>
 
@@ -95,6 +111,8 @@ $posts = $stmt->fetchAll();
                 </div>
             <?php endforeach; ?>
         </div>
+        
+        <?php echo render_pagination($pagination['current_page'], $pagination['total_pages'], 'index.php'); ?>
     <?php endif; ?>
 </section>
 

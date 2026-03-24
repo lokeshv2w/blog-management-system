@@ -21,12 +21,20 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
     redirect('posts.php');
 }
 
-// Fetch posts
-$stmt = $pdo->query("SELECT p.id, p.title, p.status, p.created_at, c.name as category, u.username as author 
+// Fetch total count for pagination
+$total_posts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
+$pagination = get_pagination_data($total_posts, 10);
+
+// Fetch posts with limit and offset
+$stmt = $pdo->prepare("SELECT p.id, p.title, p.status, p.created_at, c.name as category, u.username as author 
                      FROM posts p 
                      LEFT JOIN categories c ON p.category_id = c.id 
                      LEFT JOIN users u ON p.user_id = u.id 
-                     ORDER BY p.created_at DESC");
+                     ORDER BY p.created_at DESC 
+                     LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', (int)$pagination['limit'], PDO::PARAM_INT);
+$stmt->bindValue(':offset', (int)$pagination['offset'], PDO::PARAM_INT);
+$stmt->execute();
 $posts = $stmt->fetchAll();
 ?>
 
@@ -76,6 +84,9 @@ $posts = $stmt->fetchAll();
                 </tbody>
             </table>
         <?php endif; ?>
+    </div>
+    <div class="card-footer">
+        <?php echo render_pagination($pagination['current_page'], $pagination['total_pages'], 'posts.php'); ?>
     </div>
 </div>
 

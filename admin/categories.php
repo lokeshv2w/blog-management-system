@@ -62,8 +62,20 @@ if ($action === 'edit' && isset($_GET['id'])) {
     $edit_category = $stmt->fetch();
 }
 
-// List all categories
-$stmt = $pdo->query("SELECT c.*, COUNT(p.id) as post_count FROM categories c LEFT JOIN posts p ON c.id = p.category_id GROUP BY c.id ORDER BY c.name ASC");
+// Fetch total count for pagination
+$total_categories = $pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
+$pagination = get_pagination_data($total_categories, 10);
+
+// List categories with limit and offset
+$stmt = $pdo->prepare("SELECT c.*, COUNT(p.id) as post_count 
+                      FROM categories c 
+                      LEFT JOIN posts p ON c.id = p.category_id 
+                      GROUP BY c.id 
+                      ORDER BY c.name ASC 
+                      LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', (int)$pagination['limit'], PDO::PARAM_INT);
+$stmt->bindValue(':offset', (int)$pagination['offset'], PDO::PARAM_INT);
+$stmt->execute();
 $categories = $stmt->fetchAll();
 ?>
 
@@ -139,6 +151,9 @@ $categories = $stmt->fetchAll();
                     </tbody>
                 </table>
             <?php endif; ?>
+        </div>
+        <div class="card-footer">
+            <?php echo render_pagination($pagination['current_page'], $pagination['total_pages'], 'categories.php'); ?>
         </div>
     </div>
 </div>

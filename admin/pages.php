@@ -17,8 +17,15 @@ if (isset($_GET['delete'])) {
     redirect('pages.php');
 }
 
-// Fetch all pages
-$stmt = $pdo->query("SELECT * FROM pages ORDER BY created_at DESC");
+// Fetch total count for pagination
+$total_pages_count = $pdo->query("SELECT COUNT(*) FROM pages")->fetchColumn();
+$pagination = get_pagination_data($total_pages_count, 10);
+
+// Fetch pages with limit and offset
+$stmt = $pdo->prepare("SELECT * FROM pages ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', (int)$pagination['limit'], PDO::PARAM_INT);
+$stmt->bindValue(':offset', (int)$pagination['offset'], PDO::PARAM_INT);
+$stmt->execute();
 $pages = $stmt->fetchAll();
 ?>
 
@@ -72,6 +79,9 @@ $pages = $stmt->fetchAll();
                 </tbody>
             </table>
         <?php endif; ?>
+    </div>
+    <div class="card-footer">
+        <?php echo render_pagination($pagination['current_page'], $pagination['total_pages'], 'pages.php'); ?>
     </div>
 </div>
 

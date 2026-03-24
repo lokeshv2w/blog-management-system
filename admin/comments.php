@@ -16,13 +16,21 @@ if (isset($_GET['id']) && in_array($action, ['approve', 'delete'])) {
     redirect('comments.php');
 }
 
-// Fetch comments
-$stmt = $pdo->query("
+// Fetch total count for pagination
+$total_comments = $pdo->query("SELECT COUNT(*) FROM comments")->fetchColumn();
+$pagination = get_pagination_data($total_comments, 10);
+
+// Fetch comments with limit and offset
+$stmt = $pdo->prepare("
     SELECT c.*, p.title as post_title 
     FROM comments c 
     JOIN posts p ON c.post_id = p.id 
     ORDER BY c.status ASC, c.created_at DESC
+    LIMIT :limit OFFSET :offset
 ");
+$stmt->bindValue(':limit', (int)$pagination['limit'], PDO::PARAM_INT);
+$stmt->bindValue(':offset', (int)$pagination['offset'], PDO::PARAM_INT);
+$stmt->execute();
 $comments = $stmt->fetchAll();
 ?>
 
@@ -85,6 +93,9 @@ $comments = $stmt->fetchAll();
                 </tbody>
             </table>
         <?php endif; ?>
+    </div>
+    <div class="card-footer">
+        <?php echo render_pagination($pagination['current_page'], $pagination['total_pages'], 'comments.php'); ?>
     </div>
 </div>
 
